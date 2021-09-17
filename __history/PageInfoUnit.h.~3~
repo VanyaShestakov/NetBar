@@ -1,0 +1,18 @@
+//---------------------------------------------------------------------------
+
+#ifndef PageInfoUnitH
+#define PageInfoUnitH
+class PageInfo {
+	private:
+		String pageURL;
+		String pageTitle;
+		TWebBrowser *webBrowser;
+	public:
+		String getPageURL();
+		void setPageURL(String url);
+
+		String getPageTitle();
+		void setPageTitle(String title);
+};
+//---------------------------------------------------------------------------
+#endif

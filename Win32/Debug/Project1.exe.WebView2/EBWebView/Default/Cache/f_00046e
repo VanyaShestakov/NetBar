@@ -1,0 +1,1752 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>MS Office Online Adapter</title><style>html, body {
+					overflow: hidden;
+					height: 100%;
+					margin: 0;
+					background: #fff;
+					font: 16px/1 sans-serif;
+					color: #000;
+				}</style></head><body><script>(function(factory) {
+    if (window.define) {
+        define('lib/onload', function(require, exports) {
+            exports = factory();
+        });
+    }
+
+    factory();
+})(function() {
+    var onLoad = function(callback) {
+        if (onLoad.__loaded) {
+            callback();
+        } else {
+            var success = function() {
+                onLoad.__loaded = true;
+                callback();
+            };
+
+            if (document.readyState === 'complete') {
+                success();
+            } else {
+                if (window.addEventListener) {
+                    window.addEventListener('load', success, false);
+                } else if (window.attachEvent) {
+                    window.attachEvent('onload', success);
+                }
+            }
+        }
+    };
+
+    onLoad.on = function(name, cb) {
+        if (onLoad['_emitted__' + name] == true) {
+            cb(name);
+        }
+        (onLoad['_' + name] || (onLoad['_' + name] = [])).push(cb);
+    };
+
+    onLoad.emit = function(name) {
+        onLoad['_emitted__' + name] = true;
+
+        if (onLoad['_' + name]) {
+            for (var cbs = onLoad['_' + name], i = 0, cb, len = cbs.length; i < len; i++) {
+                if (typeof(cb = cbs[i]) === 'function') {
+                    cb(name);
+                }
+            }
+        }
+    };
+
+    window.onLoad = onLoad;
+
+    return onLoad;
+});
+window.RADAR =(function(factory){
+	var isModule = false;
+
+	try {
+		isModule = !!(define || module)
+	} catch(e) {}
+
+	if (isModule) {
+		define('lib/radar', function(require, exports) {
+			exports.radar = factory;
+		});
+	}
+
+	return factory;
+
+})(function(prefix, email, split, pageId, isGAtoDWH) {
+	var project = 'cloud';
+	var baseUrl = 'https://xray.mail.ru/update';
+
+	if (split) {
+		split = String(split);
+	}
+
+	var now = Date.now || function () {
+		return (new Date()).getTime();
+	};
+
+	var transport = {
+		_options: {
+			timeout: 3000
+		},
+
+		_call: function (immediate, callback) {
+			if (immediate) {
+				try {
+					callback();
+
+				} catch (reason) {}
+
+			} else {
+				/* TODO: avoid onLoad usage! */
+				onLoad(function () {
+					if (window.requestIdleCallback) {
+						window.requestIdleCallback(callback);
+
+					} else {
+						window.setTimeout(callback, 0);
+					}
+				});
+			}
+		},
+
+		_createQueryString: function (queryParams) {
+			var KEY = 0;
+			var VALUE = 1;
+
+			var queryString = '';
+
+			for (var i = 0, length = queryParams.length; i < length; i++) {
+				var queryParam = queryParams[i];
+				var key = queryParam[KEY];
+				var value = queryParam[VALUE];
+
+				if (i) {
+					queryString += '&';
+				}
+
+				if (value === undefined) {
+					queryString += key;
+
+				} else {
+					queryString += key + '=' + value;
+				}
+			}
+
+			return queryString;
+		},
+
+		/* dumn legacy… TODO: use promises */
+		_Deferred: function () {
+			var PENDING = 0;
+
+			var ALWAYS = 0;
+			var DONE = 1;
+			var FAIL = 2;
+
+			var TYPE = 0;
+			var CALLBACK = 1;
+
+			var state = PENDING;
+			var queue = [];
+			var value;
+
+			var deferred = {
+				resolve: function (data) {
+					if (state === PENDING) {
+						state = DONE;
+						value = data;
+
+						for (var i = 0, length = queue.length; i < length; i++) {
+							var params = queue[i];
+							var type = params[TYPE];
+
+							if (type === DONE || type === ALWAYS) {
+								var callback = params[CALLBACK];
+
+								callback(value);
+							}
+						}
+
+						queue = null;
+					}
+
+					return deferred;
+				},
+
+				reject: function (reason) {
+					if (state === PENDING) {
+						state = FAIL;
+						value = reason;
+
+						for (var i = 0, length = queue.length; i < length; i++) {
+							var params = queue[i];
+							var type = params[TYPE];
+
+							if (type === FAIL || type === ALWAYS) {
+								var callback = params[CALLBACK];
+
+								callback(value);
+							}
+						}
+
+						queue = null;
+					}
+
+					return deferred;
+				},
+
+				always: function (callback) {
+					if (state === PENDING) {
+						queue.push([ALWAYS, callback]);
+
+					} else {
+						callback(value);
+					}
+
+					return deferred;
+				},
+
+				done: function (callback) {
+					if (state === PENDING) {
+						queue.push([DONE, callback]);
+
+					} else if (state === DONE) {
+						callback(value);
+					}
+
+					return deferred;
+				},
+
+				fail: function (callback) {
+					if (state === PENDING) {
+						queue.push([FAIL, callback]);
+
+					} else if (state === FAIL) {
+						callback(value);
+					}
+
+					return deferred;
+				},
+
+				then: function (onFulfilled, onRejected) {
+					deferred.done(onFulfilled);
+
+					if (onRejected) {
+						deferred.fail(onRejected);
+					}
+
+					return deferred;
+				},
+
+				'catch': function (onRejected) {
+					deferred.fail(onRejected);
+
+					return deferred;
+				}
+			};
+
+			return deferred;
+		},
+
+		iframe: function (url, queryParams, immediate) {
+			var deferred = new this._Deferred();
+			var timeoutId = 0;
+
+			var onLoad = function () {
+				this.onload = null;
+				this.src = 'about:blank';
+				window.clearTimeout(timeoutId);
+
+				var parent = this.parentNode;
+
+				if (parent) {
+					parent.removeChild(this);
+				}
+
+				deferred.resolve();
+			};
+
+			this._call(immediate, function () {
+				var frame = document.createElement('iframe');
+
+				frame.setAttribute('frameborder', 0);
+				frame.setAttribute('style', 'width: 1px; height: 1px; position: absolute;');
+				frame.onload = onLoad;
+
+				timeoutId = window.setTimeout(function () {
+					frame.onload();
+					deferred.reject(new Error('time is out'));
+				}, transport._options.timeout);
+
+				frame.src = url + '?' + transport._createQueryString(queryParams);
+				document.body.appendChild(frame);
+			});
+
+			return deferred;
+		},
+
+		xhr: function (url, queryParams, immediate) {
+			var deferred = new this._Deferred();
+			var timeoutId = 0;
+
+			var onReadyStateChange = function () {
+				var DONE = 4;
+
+				if (this.readyState == DONE) {
+					this.onreadystatechange = null;
+					window.clearTimeout(timeoutId);
+
+					var status = this.status;
+
+					if (status >= 200 && status < 400) {
+						deferred.resolve();
+
+					} else {
+						var errorMessage;
+
+						if (status) {
+							errorMessage = 'HTTP ' + status + ' ' + this.statusText;
+
+						} else {
+							errorMessage = 'connection';
+						}
+
+						deferred.reject(new Error(errorMessage));
+					}
+				}
+			};
+
+			this._call(immediate, function () {
+				var xhr = new XMLHttpRequest();
+
+				xhr.open('POST', url);
+				xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+				xhr.onreadystatechange = onReadyStateChange;
+
+				timeoutId = window.setTimeout(function () {
+					// don't abort, just reject
+					xhr.onreadystatechange = null;
+					deferred.reject(new Error('time is out'));
+				}, transport._options.timeout);
+
+				xhr.send(transport._createQueryString(queryParams));
+			});
+
+			return deferred;
+		},
+
+		_beacon: function (url, queryParams, immediate) {
+			var deferred = new this._Deferred();
+
+			this._call(immediate, function () {
+				var KEY = 0;
+				var VALUE = 1;
+
+				var formData = new FormData();
+
+				for (var i = 0, length = queryParams.length; i < length; i++) {
+					var queryParam = queryParams[i];
+
+					formData.append(queryParam[KEY], queryParam[VALUE]);
+				}
+
+				if (navigator.sendBeacon(url, formData)) {
+					deferred.resolve();
+
+				} else {
+					deferred.reject(new Error('not queued'));
+				}
+			});
+
+			return deferred;
+		},
+
+		post: function (url, queryParams, immediate) {
+			//if (navigator.sendBeacon) {
+			//	return this._beacon(url, queryParams, immediate);
+			//}
+
+			return this.xhr(url, queryParams, immediate);
+		},
+
+		image: function (url, queryParams, immediate) {
+			var deferred = new this._Deferred();
+			var timeoutId = 0;
+
+			var onLoad = function () {
+				window.clearTimeout(timeoutId);
+				this.onload = null;
+				this.onerror = null;
+
+				deferred.resolve();
+			};
+
+			var onError = function () {
+				window.clearTimeout(timeoutId);
+				this.onload = null;
+				this.onerror = null;
+
+				deferred.reject(new Error('loading failed'));
+			};
+
+			this._call(immediate, function () {
+				var image = new Image();
+
+				image.onload = onLoad;
+				image.onerror = onError;
+
+				timeoutId = window.setTimeout(function () {
+					image.onload = null;
+					image.onerror = null;
+
+					deferred.reject(new Error('time is out'));
+				}, transport._options.timeout);
+
+				image.src = url + '?' + transport._createQueryString(queryParams);
+			});
+
+			return deferred;
+		},
+
+		immediate: function (url, queryParams) {
+			return this.image(url, queryParams, true);
+		},
+
+		beacon: function (url, queryParams, immediate) {
+			if (navigator.sendBeacon) {
+				return this._beacon(url, queryParams, immediate);
+			}
+
+			return this.image(url, queryParams, immediate);
+		},
+
+		beaconImmediate: function (url, queryParams) {
+			return this.beacon(url, queryParams, true);
+		}
+	};
+
+	var createCounter = function (mainLabel, mainValue) {
+		var time = now();
+		var mainTime = time;
+		var data = [];
+		var kaktam;
+
+		var counter = {
+			alreadySended: false,
+
+			params: {},
+
+
+
+			add: function (label, value) {
+				if (!counter.alreadySended) {
+					data.push({
+						label: label,
+						time: now(),
+						value: value
+					});
+				}
+
+				return counter;
+			},
+
+			timeEnd: function (label) {
+				if (!counter.alreadySended) {
+					data.push({
+						label: label,
+						time: now(),
+						value: null
+					});
+				}
+
+				return counter;
+			},
+
+			kaktam: function (file, message) {
+				if (!counter.alreadySended) {
+					kaktam = {
+						file: file,
+						message: message
+					};
+				}
+
+				return counter;
+			},
+
+			param: function (name, value) {
+				if (!counter.alreadySended && name) {
+					counter.params[name] = value;
+				}
+
+				return counter;
+			},
+
+			_getData: function () {
+				var result = '';
+
+				for (var i = 0, length = data.length; i < length; i++) {
+					var mark = data[i];
+					var value;
+
+					if (mark.value === undefined) {
+						value = mark.time - time;
+
+					} else if (mark.value === null) {
+						value = mark.time - mainTime;
+
+					} else {
+						value = mark.value;
+					}
+
+					if (i) {
+						result += ',';
+					}
+
+					result += mark.label + ':' + value;
+					time = mark.time;
+				}
+
+				return result;
+			},
+
+			send: function (transportType) {
+				if (counter.alreadySended) {
+					throw new Error("This counter '" + mainLabel + "' already sended to server");
+				}
+
+				counter.alreadySended = true;
+
+				var queryParams = [];
+
+				queryParams.push(['p', project]);
+				queryParams.push(['t', mainLabel + prefix]);
+				queryParams.push(['v', mainValue === undefined ? now() - mainTime : mainValue]);
+
+				if (data.length) {
+					queryParams.push(['i', counter._getData()]);
+				}
+
+				data = null;
+
+				queryParams.push(['rnd', Math.random()]);
+
+				if (email) {
+					queryParams.push(['email', email]);
+				}
+
+				if (split) {
+					queryParams.push(['split', split]);
+				}
+
+				if (pageId) {
+					queryParams.push(['x-page-id', pageId]);
+				}
+
+				var params = counter.params;
+
+				for (var key in params) {
+					if (params.hasOwnProperty(key)) {
+						queryParams.push([key, encodeURIComponent(params[key])]);
+					}
+				}
+
+				counter.params = null;
+
+				if (kaktam) {
+					queryParams.push(['rlog', project + '_' + kaktam.file]);
+					queryParams.push(['rlog_message', encodeURIComponent(kaktam.message)]);
+					kaktam = null;
+				}
+
+				switch (transportType) {
+					case 'iframe':
+					case 'beacon':
+					case 'immediate':
+					case 'beaconImmediate':
+						counter.deferred = transport[transportType](baseUrl, queryParams);
+						break;
+
+					case 'post':
+						var postUrl = baseUrl + '?xpost=' + mainLabel + prefix;
+
+						counter.deferred = transport.post(postUrl, queryParams);
+						break;
+
+					default:
+						counter.deferred = transport.image(baseUrl, queryParams);
+				}
+
+				return counter;
+			},
+
+			after: function (callback) {
+				var deferred = counter.deferred;
+
+				if (deferred) {
+					deferred.always(callback);
+				}
+
+				return counter;
+			},
+		};
+
+		return counter;
+	};
+
+	var radar = function (label, value, transportType) {
+		return createCounter(label, value).send(transportType);
+	};
+
+	radar.ts = now;
+
+	radar.post = function (label, value) {
+		return createCounter(label, value).send('post');
+	};
+
+	radar.immediate = function (label, value) {
+		return createCounter(label, value).send('immediate');
+	};
+
+	radar.beacon = function (label, value) {
+		return createCounter(label, value).send('beacon');
+	};
+
+	radar.beaconImmediate = function (label, value) {
+		return createCounter(label, value).send('beaconImmediate');
+	};
+
+	radar.error = function (label, transportType) {
+		return createCounter('error_' + label).send(transportType);
+	};
+
+	radar.group = function (label, value, transportType) {
+		return createCounter(label, value, transportType);
+	};
+
+	radar.deferred = function (label, deferred, transportType) {
+		var group = createCounter(label);
+
+		deferred
+			.done(function () {
+				group.add('success');
+			})
+			.fail(function () {
+				group.add('error');
+			})
+			.always(function () {
+				group.send(transportType);
+			});
+
+		return deferred;
+	};
+
+	function iReplacer(i) {
+		return i.toString().replace(/[^a-zA-Z0-9-]/gi, '-');
+	}
+
+	radar.ga = function(i, b, category, action, label) {
+		if (!isGAtoDWH) {
+			return ga.apply(window, arguments);
+		} else {
+			var _radar = radar.group('web-analytics');
+
+			if (typeof category !== 'string') {
+				var params = category;
+
+				category = params.eventCategory;
+				action = params.eventAction;
+				label = params.eventLabel;
+			}
+
+			var counter = iReplacer(category) + '_' + iReplacer(action);
+
+			if (label) {
+
+				_radar.add(counter, 1);
+
+				counter += '_' + iReplacer(label);
+			}
+
+			console && console.info && console.info('DWH GA: category - "' + category + '", action - "' + action + '", label - "' + label + '"');
+
+			_radar.add(counter, 1);
+
+			_radar.send();
+
+			gtag('event', action, {
+				event_category: category,
+				event_label: label
+			});
+		}
+	};
+
+	return radar;
+/* don't paste semicolon or newline at EOF, TODO: refactor to module */})
+('',"anonym",undefined, 'toAJyTE6Ky');</script><script>
+(function() {
+	var image = new Image();
+
+	image.onerror = function () {
+		RADAR.post('error_image-disabled');
+	};
+
+	image.src = 'https://img1.imgsmail.ru/0.gif?rnd=' + Math.random();
+})();
+</script><script>var __OFFICE_VIEW__ ="{\"pageId\":\"toAJyTE6Ky\",\"url\":\"https://word-view.officeapps.live.com/wv/wordviewerframe.aspx?WOPISrc=https://msedit.vkuserdocs.net/wopi-view/files/b4iWrkAZfH5RwsTbpQfdqpJyQs8Gh2N9U5fPMu24HVn\",\"email\":\"anonym\",\"status\":\"200\",\"params\":{\"access_token\":\"jcu3tqoAFjfqCNmK39ckLQLdV45hQkpEkYgMCK1BCAo6azYD325C8c7\",\"access_token_ttl\":1631524739000}}";/**
+ * Библиотека для работы c Office Online.
+ * Позволяет загрузить редактор во фрейм и взаимодествовать
+ * с ним посредством передачи сообщений через postMessage.
+ *
+ * Конструктор в качестве параметром может принимать следующие значения:
+ *
+ *     params = {
+ *        url: string, // action формы для отправки во фрейм
+ *
+ *        data: {
+ *            access_token:     string,// токен
+ *            access_token_ttl: number // время жизни токена
+ *        },
+ *
+ *        [blurFocus]:      boolean,  // отправка во фрейм сообщения Blur_Focus
+ *
+ *        [onFrameTimeout]: Function, // слишком долго загружался фрейм
+ *        [onFrameError]:   Function, // произошла ошибка загрузки фрейма
+ *        [onFrameLoad]:    Function, // успешная загрузка фрейма
+ *
+ *        [onTimeout]:      Function, // не дождались сообщения App_LoadingStatus
+ *        [onMessage]:      Function, // Office Online прислал сообщение
+ *        [onStart]:        Function, // Office Online прислал App_LoadingStatus
+ *        [onRename]:       Function, // Office Online прислал File_Rename
+ *        [onSharing]:      Function, // Office Online прислал UI_Sharing
+ *        [onClose]:        Function  // Office Online прислал UI_Close
+ *     }
+ *
+ * Пример использования:
+ *
+ *     new OfficeOnlineFrame(params).appendTo(document.body)
+ *
+ * @doc http://wopi.readthedocs.org/en/latest/scenarios/postmessage.html#listening-to-messages-from-the-office-online-iframe
+ */
+;(function () {
+	'use strict';
+
+	function createFrame() {
+		var frame = document.createElement('iframe');
+
+		frame.id = frame.name = 'office-frame';
+		frame.src = 'about:blank';
+		frame.style.cssText = 'visibility: hidden;'
+							+ 'position: absolute; top: 0; left: 0;'
+							+ 'width: 100%; height: 100%; margin: 0;'
+							+ 'border: none';
+
+		return frame;
+	}
+
+	function createInput(type, name, value) {
+		var input = document.createElement('input');
+
+		input.name = name;
+		input.type = type;
+		input.value = value;
+
+		return input;
+	}
+
+	function createForm(method, action, target, inputs) {
+		var form = document.createElement('form');
+
+		form.action = action;
+		form.method = method;
+		form.target = target;
+
+		Object.keys(inputs).forEach(function(name) {
+			form.appendChild(createInput('hidden', name, inputs[name]));
+		});
+
+		return form;
+	}
+
+	function getOrigin(url) {
+		var hyperlink = document.createElement('a');
+
+		hyperlink.href = url;
+
+		return hyperlink.protocol + '//' + hyperlink.hostname;
+	}
+
+	function tryParseJSON(jsonString) {
+		try {
+			return JSON.parse(jsonString);
+		} catch (reason) {
+		}
+
+		return null;
+	}
+
+	function nop() {}
+
+	function OfficeOnlineFrame(params) {
+		var url = params.url;
+		var frame = createFrame();
+		var form = createForm('post', url, frame.name, params.data);
+
+		this._form = form;
+		this._frame = frame;
+		this._origin = getOrigin(url);
+
+		if ('frameTimeout' in params) {
+			this.frameTimeout = params.frameTimeout;
+		}
+
+		if ('startTimeout' in params) {
+			this.startTimeout = params.startTimeout;
+		}
+
+		if ('blurFocus' in params) {
+			this.blurFocus = params.blurFocus;
+		}
+
+		this._assignCallbacks(params);
+		this._listenFrameEvents();
+		this._listenFrameMessages();
+	}
+
+	OfficeOnlineFrame.prototype = {
+		constructor: OfficeOnlineFrame,
+
+		blurFocus: false,
+
+		frameTimeout: 15000,
+		startTimeout: 30000,
+
+		_frameTimeoutId: 0,
+		_startTimeoutId: 0,
+
+		_frame: null,
+		_form: null,
+
+		_reactOnFrameMessages: true,
+
+		_onFrameTimeoutCallback: nop,
+		_onFrameErrorCallback: nop,
+		_onFrameLoadCallback: nop,
+		_onTimeoutCallback: nop,
+		_onMessageCallback: nop,
+		_onSharingCallback: nop,
+		_onRenameCallback: nop,
+		_onStartAfterTimeoutCallback: nop,
+		_onStartCallback: nop,
+		_onCloseCallback: nop,
+
+		_eventTypes: [
+			'onStartAfterTimeout',
+			'onFrameTimeout',
+			'onFrameError',
+			'onFrameLoad',
+			'onTimeout',
+			'onMessage',
+			'onSharing',
+			'onRename',
+			'onStart',
+			'onClose'
+		],
+
+		_frameEventTypes: [
+			'load',
+			'error'
+		],
+
+		_assignCallbacks: function (params) {
+			this._eventTypes.forEach(function (eventType) {
+				if (eventType in params) {
+					this['_' + eventType + 'Callback'] = params[eventType];
+				}
+			}, this);
+		},
+
+		_listenFrameMessages: function () {
+			window.addEventListener('message', this);
+		},
+
+		_stopReactOnFrameMessages: function(){
+			this._reactOnFrameMessages = false;
+		},
+
+		_stopListeningFrameMessages: function () {
+			window.removeEventListener('message', this);
+		},
+
+		_listenFrameEvents: function () {
+			this._frameEventTypes.forEach(function (eventType) {
+				this._frame.addEventListener(eventType, this);
+			}, this);
+		},
+
+		_stopListeningFrameEvents: function () {
+			this._frameEventTypes.forEach(function (eventType) {
+				this._frame.removeEventListener(eventType, this);
+			}, this);
+		},
+
+		_postReady: function () {
+			this.postMessage(JSON.stringify({
+				MessageId: 'Host_PostmessageReady',
+				SendTime: Date.now(),
+				Values: {}
+			}));
+		},
+
+		_postBlurFocus: function () {
+			this.postMessage(JSON.stringify({
+				MessageId: 'Blur_Focus',
+				SendTime: Date.now(),
+				Values: {}
+			}));
+		},
+
+		_setStartTimeout: function () {
+			var officeOnlineFrame = this;
+
+			this._startTimeoutId = window.setTimeout(function () {
+				officeOnlineFrame._onStartTimeout();
+			}, this.startTimeout);
+		},
+
+		_clearStartTimeout: function () {
+			var startTimeoutId = this._startTimeoutId;
+
+			if (startTimeoutId) {
+				window.clearTimeout(startTimeoutId);
+			}
+		},
+
+		_setFrameTimeout: function () {
+			var officeOnlineFrame = this;
+
+			this._frameTimeoutId = window.setTimeout(function () {
+				officeOnlineFrame._onFrameTimeout();
+			}, this.frameTimeout);
+		},
+
+		_clearFrameTimeout: function () {
+			var frameTimeoutId = this._frameTimeoutId;
+
+			if (frameTimeoutId) {
+				window.clearTimeout(frameTimeoutId);
+			}
+		},
+
+		_onStartTimeout: function () {
+			this._stopListeningFrameEvents();
+			this._stopReactOnFrameMessages();
+			this._onTimeoutCallback(new Error('message timeout'));
+		},
+
+		_onFrameTimeout: function () {
+			this._clearStartTimeout();
+			this._stopListeningFrameEvents();
+			this._stopReactOnFrameMessages();
+			this._onFrameTimeoutCallback(new Error('frame timeout'));
+		},
+
+		_onFrameLoadOnce: function () {
+			this._clearFrameTimeout();
+			this._stopListeningFrameEvents();
+			this._makeVisible();
+			this._onFrameLoadCallback();
+			this._postReady();
+
+			this._onFrameLoadOnce = nop;
+		},
+
+		_onFrameErrorOnce: function () {
+			this._clearFrameTimeout();
+			this._clearStartTimeout();
+			this._stopListeningFrameEvents();
+			this._stopListeningFrameMessages();
+			this._onFrameErrorCallback();
+		},
+
+		_onAppLoadingStatusAfterTimeoutMessage: function(message){
+			this._clearFrameTimeout();
+			this._clearStartTimeout();
+			this._stopListeningFrameEvents();
+			this._stopListeningFrameMessages();
+
+			this._onStartAfterTimeoutCallback({
+				loadedTime: message.Values.DocumentLoadedTime
+			});
+		},
+
+		_onAppLoadingStatusMessage: function (message) {
+			this._clearStartTimeout();
+			this._onFrameLoadOnce();
+
+			if (this.blurFocus) {
+				this._postBlurFocus();
+			}
+
+			this._onStartCallback({
+				loadedTime: message.Values.DocumentLoadedTime
+			});
+		},
+
+		_onRenameMessage: function (message) {
+			this._onRenameCallback({
+				newName: message.Values.NewName
+			});
+		},
+
+		_onSharingMessage: function () {
+			this._onSharingCallback({});
+		},
+
+		_onCloseMessage: function () {
+			this._onCloseCallback({});
+		},
+
+		_onMessage: function (event) {
+			if (this._origin == event.origin) {
+				var message = tryParseJSON(event.data);
+
+				if (message) {
+					if (this._reactOnFrameMessages){
+						switch (message.MessageId){
+							case 'App_LoadingStatus':
+								this._onAppLoadingStatusMessage(message);
+								break;
+
+							case 'File_Rename':
+								this._onRenameMessage(message);
+								break;
+
+							case 'UI_Sharing':
+								this._onSharingMessage(message);
+								break;
+
+							case 'UI_Close':
+								this._onCloseMessage(message);
+								break;
+						}
+
+						this._onMessageCallback(message);
+					} else if (message.MessageId == 'App_LoadingStatus'){
+						this._onAppLoadingStatusAfterTimeoutMessage(message)
+					}
+				}
+			}
+		},
+
+		handleEvent: function (event) {
+			switch (event.type) {
+				case 'message':
+					this._onMessage(event);
+					break;
+
+				case 'load':
+					this._onFrameLoadOnce();
+					break;
+
+				case 'error':
+					this._onFrameErrorOnce();
+					break;
+			}
+		},
+
+		_makeVisible: function () {
+			this._frame.style.visibility = 'visible';
+		},
+
+		appendTo: function (container) {
+			this._setFrameTimeout();
+			this._setStartTimeout();
+
+			var form = this._form;
+
+			container.appendChild(form);
+			container.appendChild(this._frame);
+
+			form.submit();
+
+			return this;
+		},
+
+		postMessage: function (data) {
+			this._frame.contentWindow.postMessage(data, '*');
+
+			return this;
+		},
+
+		dispose: function () {
+			this._clearFrameTimeout();
+			this._clearStartTimeout();
+			this._stopListeningFrameEvents();
+			this._stopListeningFrameMessages();
+
+			this._frame.src = 'about:blank';
+
+			for (var key in this) {
+				if (this.hasOwnProperty(key)) {
+					delete this[key];
+				}
+			}
+
+			return this;
+		}
+	};
+
+	if (typeof define != 'undefined') {
+		define(function () {
+			return OfficeOnlineFrame;
+		});
+	} else {
+		window.OfficeOnlineFrame = OfficeOnlineFrame;
+	}
+
+}());
+/**
+ * Реализует набор сообщений, отправляемых через postMessage,
+ * в формате от MailPad для Office Online.
+ * Собирает и отправляет статистику в радар.
+ *
+ * @requires radar.js, OfficeOnlineFrame.js
+ *
+ * Для работы необходима глобальная JSON-строка __OFFICE_VIEW__,
+ * содержащая следующие данные:
+ *
+ *     __OFFICE_VIEW__ = {
+ *         url: string,
+ *         email: string,
+ *         [error]: undefined|number|Object,
+ *         params: {
+ *             access_token: string,
+ *             access_token_ttl: number
+ *         }
+ *     }
+ *
+ * @doc http://wopi.readthedocs.org/en/latest/scenarios/postmessage.html#listening-to-messages-from-the-office-online-iframe
+ */
+;(function () {
+	'use strict';
+
+	/**
+	 * Время (timestamp) создания фрейма
+	 * или открытия вкладки браузера в миллисекундах.
+	 * @type {number}
+	 */
+	var navigationStart = (new Date()).getTime();
+
+	if (window.performance && performance.timing) {
+		navigationStart = performance.timing.navigationStart;
+	}
+
+	/**
+	 * Вычисляет временной интервал в миллисекундах от момента создания фрейма
+	 * или открытия вкладки браузера до настоящего времени.
+	 * @param {number} startTime – Время (timestamp) создания фрейма
+	 * или открытия вкладки браузера.
+	 * @returns {number}
+	 */
+	function getElapsedTimeSince(startTime) {
+		return Math.round((new Date()).getTime() - startTime);
+	}
+
+	/**
+	 * Находит наиболее близкую к указанному значению временную отметку,
+	 * кратную 100 или 1000 в зависимости от величины значения.
+	 * @param {number} time – timestamp
+	 * @returns {number}
+	 */
+	function epsilon(time) {
+		var divider = time < 1000 ? 100 : 1000;
+		var mod = time % divider;
+
+		time = time - mod;
+
+		if ( mod >= 5 * divider / 10 ) {
+			time += divider;
+		}
+
+		return time;
+	}
+
+	/**
+	 * Пытается распарсить JSON-строку.
+	 * @param {string} string – JSON-строка.
+	 * @returns {Object|null}
+	 */
+	function tryParseJSON(string) {
+		try {
+			var data = JSON.parse(string);
+
+			if (Object(data) === data) {
+				return data;
+			}
+		} catch (reason) {}
+
+		return null;
+	}
+
+	/**
+	 * Приводит идентификатор сообщения, полученного от Office Online,
+	 * к виду, который можно использовать для отправки в Радар.
+	 * @param {string} messageId – Идентификатор сообщения от Office Online.
+	 * @returns {string}
+	 */
+	function formatMessageId(messageId) {
+		return String(messageId).replace(/[^A-Za-z0-9]+/g, '').toLowerCase();
+	}
+
+	/**
+	 * Конструирует объект, который реализует интерфейс для отправки
+	 * в родительское окно сообщений через postMessage в формате от MailPad
+	 * для Office Online. Собирает и отправляет статистику в радар.
+	 * @constructor
+	 * @param {HTMLElement} frameContainer – контейнер для фрейма,
+	 * в который будет загружен Office Online.
+	 */
+	function OfficeOnlineView(frameContainer) {
+		if (this._initialize()) {
+			// Загружаем редактор во фрейм.
+			this._createOfficeOnlineFrame();
+			this._frame.appendTo(frameContainer);
+
+			this._shceduleDisposeOnUnload();
+		}
+	}
+
+	OfficeOnlineView.prototype = {
+		constructor: OfficeOnlineView,
+
+		/**
+		 * Добавляется перед названием каждого счетчика.
+		 * @private
+		 * @type {string}
+		 */
+		_radarGroup: 'office-view',
+
+		/**
+		 * Название проекта для счетчиков.
+		 * @private
+		 * @type {string}
+		 */
+		_radarProject: '',
+
+		/**
+		 * Office Online не поддерживает IE ниже 9й версии.
+		 * @private
+		 * @type {boolen}
+		 */
+		_isSupportedBrowser: window instanceof Object,
+
+		/**
+		 * Родительское окно, в которое выполянется
+		 * отправка сообщений с помощью postMessage.
+		 * @private
+		 * @type {Window}
+		 */
+		_parentWindow: window.parent || window.top,
+
+		/**
+		 * Хост родительского окна, в которое выполянется
+		 * отправка сообщений с помощью postMessage.
+		 * @private
+		 * @type {string}
+		 */
+		_parentOrigin: '*', // TODO: чтобы здесь указать хост, необходимо подождать, пока адрес фрейма перестанет быть about:blank
+
+		/**
+		 * Фрейм, в который загружается Office Online.
+		 * @private
+		 * @type {HTMLIFrameElement}
+		 */
+		_frame: null,
+
+		/**
+		 * Action формы для загрузки Office Online. Приходит с сервера.
+		 * @private
+		 * @type {string}
+		 */
+		_formUrl: 'about:blank',
+
+		/**
+		 * Параметры формы для загрузки Office Online. Приходят с сервера.
+		 * @private
+		 * @type {Object}
+		 */
+		_formParams: {
+			/**
+			 * Токен.
+			 * @type {string}
+			 */
+			access_token: '',
+
+			/**
+			 * Время жизни токена (timestamp) в миллисекундах.
+			 * @type {number}
+			 */
+			access_token_ttl: 0
+		},
+
+		/**
+		 * В MailPad это сообщение соответствует началу загрузки редактора,
+		 * после успешной загрузки во фрейм инициализирующего кода.
+		 * Для Office Online будем отправлять это сообщение
+		 * в родительское окно по событию load текущего документа.
+		 * @type {string}
+		 */
+		MESSAGE_APP_STARTED: 'app.started',
+
+		/**
+		 * В MailPad это сообщение соответствует событию DOMContentLoaded фрейма.
+		 * Для Office Online будем отправлять это сообщение
+		 * в родительское окно по событию load фрейма с редактором.
+		 * @type {string}
+		 */
+		MESSAGE_LOADED: 'loaded',
+
+		/**
+		 * В MailPad это сообщение соответствует полной готовоности редактора.
+		 * Для Office Online будем отправлять это сообщение
+		 * в родительское окно по событию load фрейма с редактором.
+		 * @type {string}
+		 */
+		MESSAGE_RENDERED: 'rendered',
+
+		/**
+		 * В MailPad это сообщение соответствует критической ошибке
+		 * в JavaScript-коде, из-за которой не удалось продолжить работу.
+		 * Может произойти даже после успешной загрузки документа.
+		 * Для Office Online будем отправлять это сообщение
+		 * в родительское окно для следующих случаев:
+		 *     - Облачный сервер прислал ошибку или неверные данные.
+		 *     - Не удалось загрузить фрейм Office Online из-за ошибки сети.
+		 *     - Попытка загрузить Office Online в неподдерживаемом браузере.
+		 *
+		 * TODO: Облачный сервер присылает подробную информацию об ошибке.
+		 *       Необходимо эмулировать сообщения status 403, 404 и 500,
+		 *       которые может присылать MailPad.
+		 *
+		 * @type {string}
+		 */
+		MESSAGE_FAIL: 'fail',
+
+		/**
+		 * Office Online в течение длительного времени,
+		 * с момента загрузки фрейма, не прислал ни одного сообщения.
+		 * Считаем, что он отображает ошибку. Других способов нет.
+		 * @type {string}
+		 */
+		MESSAGE_MS_ERROR: 'ms-error',
+
+		/**
+		 * Фрейм Office Online прислал сообщение App_LoadingStatus.
+		 * Обычно такое происходит в случае успешной загрузки документа.
+		 * @type {string}
+		 */
+		MESSAGE_MS_SUCCESS: 'ms-success',
+
+		/**
+		 * В интерфейсе Office Online есть кнопка "Выход", при нажатии
+		 * на которую, фрейм присылает сообщение UI_Close.
+		 * @type {string}
+		 */
+		MESSAGE_MS_CLOSE: 'ms-close',
+
+		/**
+		 * Успешная загрузка текущего документа.
+		 * @see MESSAGE_APP_STARTED
+		 * @type {string}
+		 */
+		RADAR_APP_STARTED: 'appstarted',
+
+		/**
+		 * Слишком долго загружался фрейм Office Online.
+		 * Скорее всего произошла сетевая ошибка.
+		 * @type {string}
+		 */
+		RADAR_FRAME_TIMEOUT: 'frame-timeout',
+
+		/**
+		 * Не удалось загрузить фрейм Office Online из-за сетевой ошибки.
+		 * @type {string}
+		 */
+		RADAR_FRAME_ERROR: 'frame-error',
+
+		/**
+		 * Успешная загрузка фрейма Office Online.
+		 * @type {string}
+		 */
+		RADAR_FRAME_LOAD: 'frame-load',
+
+		/**
+		 * Фрейм Office Online успешно загрузил документ.
+		 * На самом деле мы этого точно не можем узнать @see MESSAGE_MS_SUCCESS.
+		 * @type {string}
+		 */
+		RADAR_MS_SUCCESS: 'ms-success',
+
+		/**
+		 * Фрейм Office Online успешно загрузил документ.
+		 * На самом деле мы этого точно не можем узнать @see MESSAGE_MS_SUCCESS.
+		 * @type {string}
+		 */
+		RADAR_MS_SUCCESS_AFTER_TIMEOUT: 'ms-success-after-timeout',
+
+		/**
+		 * Office Online показал сообщение об ошибке.
+		 * На самом деле мы этого точно не можем узанать @see MESSAGE_MS_ERROR.
+		 * @type {string}
+		 */
+		RADAR_MS_ERROR: 'ms-error',
+
+		/**
+		 * Фрейм Office Online прислал сообщение UI_Close,
+		 * которое соответствует нажатию кнопки "Выход".
+		 * @type {string}
+		 */
+		RADAR_MS_CLOSE: 'ms-close',
+
+		/**
+		 * Облачный сервер прислал ошибку или неверные данные в шаблон.
+		 * @type {string}
+		 */
+		RADAR_CLOUD_ERROR: 'cloud-error',
+
+		/**
+		 * Попытка открыть Office Online в IE ниже 9й версии.
+		 * @type {string}
+		 */
+		RADAR_LTIE9: 'ltie9',
+
+		/**
+		 * Timestamp времени создания фрейма или открытия вкладки браузера.
+		 * @private
+		 * @type {number}
+		 */
+		_navigationStart: navigationStart,
+
+		/**
+		 * Отправляет в родительское окно сообщение.
+		 * @private
+		 * @param {string} message – текст сообщения.
+		 */
+		_postMessageToParent: function (message) {
+			this._parentWindow.postMessage(message, this._parentOrigin);
+		},
+
+		/**
+		 * Отправляет в родительское окно сообщение
+		 * об успешной загрузке текущего документа.
+		 * @private
+		 */
+		_postLoadMessageToParent: function () {
+			this._postMessageToParent(this.MESSAGE_APP_STARTED);
+			this._sendToRadar(this.RADAR_APP_STARTED);
+		},
+
+		/**
+		 * Отправляет в родительское окно сообщение об ошибке.
+		 * @private
+		 * @param {string} radarLabel – название счетчика.
+		 */
+		_postFailMessageToParent: function (radarLabel) {
+			var OfficeOnlineView = this;
+
+			this._sendToRadar(radarLabel).after(function () {
+				OfficeOnlineView._postMessageToParent(OfficeOnlineView.MESSAGE_FAIL);
+			});
+		},
+
+		/**
+		 * Вызывает dispose перед закрытием текущего фрейма.
+		 * @private
+		 */
+		_shceduleDisposeOnUnload: function () {
+			var officeOnlineView = this;
+
+			if (window.addEventListener) {
+				window.addEventListener('unload', function () {
+					officeOnlineView._dispose();
+				});
+			}
+		},
+
+		/**
+		 * Слишком долго загружался фрейм Office Online.
+		 * @private
+		 */
+		_onFrameTimeout: function () {
+			this._dispose();
+			this._postFailMessageToParent(this.RADAR_FRAME_TIMEOUT);
+		},
+
+		/**
+		 * Произошла ошибка загрузки фрейма Office Online.
+		 * @private
+		 */
+		_onFrameError: function () {
+			this._dispose();
+			this._postFailMessageToParent(this.RADAR_FRAME_ERROR);
+		},
+
+		/**
+		 * Успешная загрузка фрейма Office Online.
+		 * @private
+		 */
+		_onFrameLoad: function () {
+			var officeOnlineView = this;
+
+			// Так как фрейм Office Online может не прислать никаких сообщений
+			// в случае возникновения ошибки, то сразу отправляем в родительское
+			// окно сообщения loaded и rendered, чтобы превьювер отобразил
+			// скрытый фрейм, в котором вероятно Office Online может отобразить
+			// дилоговое окно с описанием ошибки. Сам факт ошибки посчитаем
+			// позже, если так и не получим App_LoadingStatus в течение
+			// длительного времени, но фрейм скрывать не будем.
+			this._postMessageToParent(this.MESSAGE_LOADED);
+			this._sendToRadar(this.RADAR_FRAME_LOAD).after(function () {
+				// Эмулируем небольшую задержку между сообщениями
+				// loaded и rendered, как это происходит в MailPad,
+				// чтобы дать браузеру подгрузить больше данных,
+				// до того как показать прелоадер Office Online.
+				officeOnlineView._postMessageToParent(officeOnlineView.MESSAGE_RENDERED);
+			});
+		},
+
+		/**
+		 * В течение длительного времени с момента начала загрузки текущего
+		 * документа, Office Online не прислал сообщение App_LoadingStatus.
+		 * В такой ситуации Office Online обычно уже показывает сообщение об ошибке.
+		 * @private
+		 */
+		_onTimeout: function () {
+			this._postMessageToParent(this.MESSAGE_MS_ERROR);
+			this._sendToRadar(this.RADAR_MS_ERROR);
+		},
+
+		/**
+		 * Office Online прислал сообщение.
+		 * @private
+		 */
+		_onMessage: function (message) {
+			if (message) {
+				var messageId = message.MessageId;
+
+				if (messageId) {
+					this._sendToRadar('message-' + formatMessageId(messageId));
+				} else {
+					this._sendToRadar('message-malformed');
+				}
+			} else {
+				this._sendToRadar('message-unknown');
+			}
+		},
+
+		/**
+		 * Office Online прислал сообщение App_LoadingStatus.
+		 * @private
+		 */
+		_onStart: function () {
+			this._postMessageToParent(this.MESSAGE_MS_SUCCESS);
+			this._sendToRadar(this.RADAR_MS_SUCCESS);
+		},
+
+		_onStartAfterTimeout: function(){
+			this._sendToRadar(this.RADAR_MS_SUCCESS_AFTER_TIMEOUT);
+		},
+
+		/**
+		 * Office Online прислал сообщение UI_Close.
+		 * @private
+		 */
+		_onClose: function () {
+			this._dispose();
+			this._postMessageToParent(this.MESSAGE_MS_CLOSE);
+			this._sendToRadar(this.RADAR_MS_CLOSE);
+		},
+
+		/**
+		 * Создает инстанс OfficeOnlineFrame, который загружает
+		 * во фрейм Office Online и обеспечивает реакцию на события.
+		 * @private
+		 */
+		_createOfficeOnlineFrame: function () {
+			var officeOnlineView = this;
+
+			this._frame = new OfficeOnlineFrame({
+				url: this._formUrl,
+				data: this._formParams,
+
+				blurFocus: true,
+
+				onFrameTimeout: function (message) {
+					officeOnlineView._onFrameTimeout(message);
+				},
+
+				onFrameError: function (message) {
+					officeOnlineView._onFrameError(message);
+				},
+
+				onFrameLoad: function (message) {
+					officeOnlineView._onFrameLoad(message);
+				},
+
+				onTimeout: function (message) {
+					officeOnlineView._onTimeout(message);
+				},
+
+				onMessage: function (message) {
+					officeOnlineView._onMessage(message);
+				},
+
+				onStartAfterTimeout: function(message){
+					// RADAR
+					officeOnlineView._onStartAfterTimeout(message);
+				},
+
+				onStart: function (message) {
+					officeOnlineView._onStart(message);
+				},
+
+				onClose: function (message) {
+					officeOnlineView._onClose(message);
+				}
+			});
+		},
+
+		/**
+		 * Закрывает фрейм и удаляет ссылки.
+		 * @private
+		 */
+		_dispose: function () {
+			var frame = this._frame;
+
+			if (frame) {
+				frame.dispose();
+			}
+
+			for (var key in this) {
+				if (this.hasOwnProperty(key)) {
+					delete this[key];
+				}
+			}
+		},
+
+		/**
+		 * Отправляет в Радар счетчик с интервалом прошедшего времени
+		 * с момента создания фрейма или открытия вкладки браузера.
+		 * @private
+		 * @param {string} label – название счетчика.
+		 * @returns {RADAR}
+		 */
+		_sendToRadar: function (label) {
+			var elapsedTime = getElapsedTimeSince(navigationStart);
+			var mainLabel = this._radarGroup + '_' + label;
+			var radar;
+
+			if (elapsedTime > 60000) {
+				RADAR.beaconImmediate(mainLabel + '_time-over1m', elapsedTime);
+			} else {
+				RADAR.beaconImmediate(mainLabel + '_time-' + epsilon(elapsedTime), elapsedTime);
+			}
+
+			radar = RADAR.beaconImmediate(mainLabel, elapsedTime);
+
+			if (this._radarProject) {
+				mainLabel = this._radarGroup + '-' + this._radarProject.replace(/_/ig, '-') + '_' + label;
+
+				if (elapsedTime > 60000) {
+					RADAR.beaconImmediate(mainLabel + '_time-over1m', elapsedTime);
+				} else {
+					RADAR.beaconImmediate(mainLabel + '_time-' + epsilon(elapsedTime), elapsedTime);
+				}
+
+				radar = RADAR.beaconImmediate(mainLabel, elapsedTime);
+			}
+
+			return radar;
+		},
+
+		/**
+		 * Анализирует пришедшие с сервера параметры Office Online.
+		 * @private
+		 * @returns boolean
+		 */
+		_initialize: function () {
+			// В любом случае оповещаем об успешной загрузке.
+			this._postLoadMessageToParent();
+
+			var getParams = {},
+				params = (document.location.href.split('?')[1] || '').split('&');
+
+			for (var i = 0, l = params.length; i < l; i++){
+				var param = params[i].split('=');
+
+				getParams[param[0]] = param[1];
+			}
+
+			this._radarProject = getParams.from;
+
+			if (!this._isSupportedBrowser) {
+				// IE<9 не поддерживается.
+				this._dispose();
+				this._postFailMessageToParent(this.RADAR_LTIE9);
+
+				return false;
+			}
+
+			if (typeof __OFFICE_VIEW__ != 'string') {
+				// Облачный сервер не прислал необходимые данные
+				// для открытия фрейма Office Online.
+				this._dispose();
+				this._postFailMessageToParent(this.RADAR_CLOUD_ERROR);
+
+				return false;
+			}
+
+			var config = tryParseJSON(__OFFICE_VIEW__);
+
+			if (!config) {
+				// Облачный сервер прислал невалидные данные
+				// для открытия фрейма Office Online.
+				this._dispose();
+				this._postFailMessageToParent(this.RADAR_CLOUD_ERROR);
+
+				return false;
+			}
+
+			if (config.error) {
+				// Облачный сервер прислал ошибку, сразу посылаем fail
+				// и не загружаем редактор во фрейм.
+				this._dispose();
+				this._postFailMessageToParent(this.RADAR_CLOUD_ERROR);
+
+				return false;
+			}
+
+			this._formUrl = config.url;
+			this._formParams = config.params;
+
+			return true;
+		}
+	};
+
+	if (typeof define != 'undefined') {
+		define(function () {
+			return OfficeOnlineView;
+		});
+	} else {
+		window.OfficeOnlineView = OfficeOnlineView;
+	}
+
+}());
+var officeOnlineView;
+
+				function runOffice(){
+					officeOnlineView = new OfficeOnlineView(document.body);
+				};
+
+				runOffice();</script></body></html>

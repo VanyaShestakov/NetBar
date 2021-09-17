@@ -1,0 +1,24 @@
+//---------------------------------------------------------------------------
+
+#ifndef TabsViewUnitH
+#define TabsViewUnitH
+//---------------------------------------------------------------------------
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Forms.hpp>
+#include <Vcl.TitleBarCtrls.hpp>
+//---------------------------------------------------------------------------
+class TTabsView : public TForm
+{
+__published:	// IDE-managed Components
+	TListBox *ListBox1;
+	TTitleBarPanel *TitleBar;
+private:	// User declarations
+public:		// User declarations
+	__fastcall TTabsView(TComponent* Owner);
+};
+//---------------------------------------------------------------------------
+extern PACKAGE TTabsView *TabsView;
+//---------------------------------------------------------------------------
+#endif

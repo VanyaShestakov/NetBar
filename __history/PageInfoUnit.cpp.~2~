@@ -1,0 +1,24 @@
+//---------------------------------------------------------------------------
+
+#pragma hdrstop
+
+#include "PageInfoUnit.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+
+PageInfo::PageInfo()
+{
+
+}
+
+String PageInfo::getPageURL()
+{
+	return this.pageURL;
+}
+
+void setPageURL(String url)
+{
+	this.pageURL = url;
+}
+
+

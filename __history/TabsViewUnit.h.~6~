@@ -1,0 +1,28 @@
+//---------------------------------------------------------------------------
+
+#ifndef TabsViewUnitH
+#define TabsViewUnitH
+//---------------------------------------------------------------------------
+#include <System.Classes.hpp>
+#include <Vcl.Controls.hpp>
+#include <Vcl.StdCtrls.hpp>
+#include <Vcl.Forms.hpp>
+#include <Vcl.TitleBarCtrls.hpp>
+#include <Vcl.ExtCtrls.hpp>
+#include <Vcl.Imaging.pngimage.hpp>
+//---------------------------------------------------------------------------
+class TTabsView : public TForm
+{
+__published:	// IDE-managed Components
+	TListBox *addressBox;
+	TTitleBarPanel *TitleBar;
+	TImage *closeBtn;
+	void __fastcall closeBtnClick(TObject *Sender);
+private:	// User declarations
+public:		// User declarations
+	__fastcall TTabsView(TComponent* Owner);
+};
+//---------------------------------------------------------------------------
+extern PACKAGE TTabsView *TabsView;
+//---------------------------------------------------------------------------
+#endif
