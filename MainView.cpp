@@ -8,6 +8,7 @@
 #include "MainView.h"
 #include "PageInfoUnit.h"
 #include "BookmarksReader.h"
+#include "BookmarksWriter.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -28,10 +29,12 @@ __fastcall TWebView::TWebView(TComponent* Owner)
 void __fastcall TWebView::FormCreate(TObject *Sender)
 {
 	createNewTab();
-	ofstream fileOut;
-	BookmarksReader reader = new BookmarksReader();
-	fileOut.open("test.txt");
-    fileOut << "hello";
+	BookmarksReader *reader = new BookmarksReader();
+	std::vector<std::pair<std::string, std::string>> bookmarks = reader->readBookmarks("test.txt");
+
+	BookmarksWriter *writer = new BookmarksWriter();
+	writer->writeBookmarks(bookmarks, "new.txt");
+
 }
 
 
