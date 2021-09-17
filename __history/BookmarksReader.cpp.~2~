@@ -1,0 +1,30 @@
+//---------------------------------------------------------------------------
+
+#pragma hdrstop
+
+#include "BookmarksReader.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+
+std::vector<std::pair<std::string, std::string>> readBookmarks(std::string path)
+{
+	std::vector<std::pair<std::string, std::string>> bookmarks;
+    std::ifstream fileReader;
+    std::string line;
+    fileReader.open(path);
+    if (fileReader.is_open())
+    {
+        while (!fileReader.eof())
+        {
+            std::pair<std::string, std::string> pair;
+            fileReader >> line;
+            int index = line.find("=");
+            pair.first = line.substr(0, index);
+            pair.second = line.substr(index + 1);
+            bookmarks.push_back(pair);
+            std::cout << line + "\n";
+        }
+        fileReader.close();
+    }
+	return bookmarks;
+}
