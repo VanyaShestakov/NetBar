@@ -16,6 +16,7 @@
 #pragma resource "*.dfm"
 TWebView *WebView;
 bool isFullScreen = false;
+bool isLoaded = true;
 String title = "";
 String pageURL = "";
 bool isSelectedBar = false;
@@ -154,7 +155,31 @@ void __fastcall TWebView::settingsBtnMouseDown(TObject *Sender, TMouseButton But
 void __fastcall TWebView::settingsBtnMouseUp(TObject *Sender, TMouseButton Button, TShiftState Shift,
           int X, int Y)
 {
-    settingsBtn->Top = settingsBtn->Top - 3;
+	settingsBtn->Top = settingsBtn->Top - 3;
+}
+
+void __fastcall TWebView::newTabBtnMouseDown(TObject *Sender, TMouseButton Button,
+		  TShiftState Shift, int X, int Y)
+{
+	newTabBtn->Top = newTabBtn->Top + 3;
+}
+
+void __fastcall TWebView::newTabBtnMouseUp(TObject *Sender, TMouseButton Button, TShiftState Shift,
+		  int X, int Y)
+{
+	newTabBtn->Top = newTabBtn->Top - 3;
+}
+
+void __fastcall TWebView::showBookmarksBtnMouseDown(TObject *Sender, TMouseButton Button,
+		  TShiftState Shift, int X, int Y)
+{
+	showBookmarksBtn->Top = showBookmarksBtn->Top + 3;
+}
+
+void __fastcall TWebView::showBookmarksBtnMouseUp(TObject *Sender, TMouseButton Button,
+		  TShiftState Shift, int X, int Y)
+{
+    showBookmarksBtn->Top = showBookmarksBtn->Top - 3;
 }
 
 void __fastcall TWebView::closeBtnClick(TObject *Sender)
@@ -219,7 +244,10 @@ void __fastcall TWebView::addressBarMouseLeave(TObject *Sender)
 
 void __fastcall TWebView::newTabBtnClick(TObject *Sender)
 {
-    createNewTab();
+	if (isLoaded)
+	{
+		createNewTab();
+	}
 }
 
 void TWebView::createNewTab()
@@ -241,13 +269,15 @@ void TWebView::createNewTab()
 	browser->OnDocumentComplete = DocumentComplete;
 	browser->OnNewWindow3 = NewWindow3;
 	browser->OnTitleChange = TitleChange;
+	browser->OnBeforeNavigate2 = BeforeNavigate2;
 	tabId++;
 }
 
 void __fastcall TWebView::DocumentComplete(TObject *ASender, _di_IDispatch const pDisp, const OleVariant &URL)
 {
 	pageURL = URL;
-    PageControl->ActivePage->Caption = "         " + title + "         ";
+	PageControl->ActivePage->Caption = "         " + title + "         ";
+	isLoaded = true;
 }
 
 void __fastcall TWebView::NewWindow3(TObject *ASender, _di_IDispatch &ppDisp, WordBool &Cancel,
@@ -296,13 +326,17 @@ void __fastcall TWebView::showBookmarksBtnClick(TObject *Sender)
 
 void __fastcall TWebView::addBookmarkBtnClick(TObject *Sender)
 {
-	BookmarksWriter *writer = new BookmarksWriter();
-	std::pair<std::string, std::string> pair;
-	pair.first = convertToStdString(title);
-	pair.second = convertToStdString(pageURL);
-	bookmarks.push_back(pair);
-	writer->writeBookmarks(bookmarks, "test.txt");
-	ShowMessage("Закладка успешно добавлена");
+	if (isLoaded)
+	{
+		BookmarksWriter *writer = new BookmarksWriter();
+		std::pair<std::string, std::string> pair;
+		pair.first = convertToStdString(title);
+		pair.second = convertToStdString(pageURL);
+		bookmarks.push_back(pair);
+		writer->writeBookmarks(bookmarks, "test.txt");
+		Application->MessageBox(L"Закладка успешно добавлена", L"NetBar", MB_OK);
+		updateBookmarksBox();
+	}
 }
 
 std::string TWebView::convertToStdString(String str)
@@ -310,6 +344,35 @@ std::string TWebView::convertToStdString(String str)
 	AnsiString ansiStr = str;
 	return ansiStr.c_str();
 }
+
+void TWebView::updateBookmarksBox()
+{
+	bookmarksBox->Clear();
+	for (int i = 0; i < bookmarks.size(); i++)
+	{
+		bookmarksBox->Items->Add(bookmarks[i].first.c_str());
+	}
+}
+
+//---------------------------------------------------------------------------
+
+void __fastcall TWebView::BeforeNavigate2(TObject *ASender, _di_IDispatch const pDisp,
+		  const OleVariant &URL, const OleVariant &Flags, const OleVariant &TargetFrameName,
+		  const OleVariant &PostData, const OleVariant &Headers,
+		  WordBool &Cancel)
+{
+	isLoaded = false;
+}
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
 

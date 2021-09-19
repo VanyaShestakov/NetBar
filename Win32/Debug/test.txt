@@ -1,2 +1,5 @@
 Google=https://www.google.com/
-dd — Википедия=https://ru.wikipedia.org/wiki/Dd
+Google=https://www.google.com/
+Google=https://www.google.com/
+Google=https://www.google.com/
+Google=https://www.google.com/

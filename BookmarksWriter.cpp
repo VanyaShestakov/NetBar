@@ -16,7 +16,12 @@ void BookmarksWriter::writeBookmarks(std::vector<std::pair<std::string, std::str
     {
 		for (int i = 0; i < bookmarks.size(); ++i)
 		{
-			writer << bookmarks[i].first + "=" + bookmarks[i].second << std::endl;
+			if(i + 1 == bookmarks.size())
+			{
+				writer << bookmarks[i].first + "=" + bookmarks[i].second;
+			} else {
+                writer << bookmarks[i].first + "=" + bookmarks[i].second << std::endl;
+			}
 		}
 		writer.close();
 	}
