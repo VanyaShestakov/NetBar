@@ -21,7 +21,8 @@
 #include <Vcl.Graphics.hpp>
 #include <Vcl.Imaging.pngimage.hpp>
 
-class PageInfo {
+class PageInfo
+{
 	private:
 		String pageURL;
 		String pageTitle;
@@ -33,7 +34,6 @@ class PageInfo {
 		void setPageTitle(String title);
 		TWebBrowser getWebBrowser();
 		void setWebBrowser(TWebBrowser *browser);
-
 
 };
 //---------------------------------------------------------------------------

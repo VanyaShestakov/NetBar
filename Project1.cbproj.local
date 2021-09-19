@@ -1,16 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
 	<Transactions>
-    <Transaction>1899.12.30 00:00:00.000.013,C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Project1.cbproj=D:\CppForms\TestProj\Project1.cbproj</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.402,C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Project1PCH1.h=D:\CppForms\TestProj\Project1PCH1.h</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.949,C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Unit1.h=D:\CppForms\TestProj\Unit1.h</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.949,D:\CppForms\TestProj\Unit1.h=C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Unit1.h</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.686,=D:\CppForms\TestProj\PageInfoUnit.cpp</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.534,=D:\CppForms\TestProj\MainView.cpp</Transaction>
     <Transaction>1899.12.30 00:00:00.000.908,=C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Project1PCH1.h</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.212,D:\CppForms\TestProj\TabsViewUnit.cpp=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.426,=D:\CppForms\TestProj\TabsViewUnit.cpp</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.949,D:\CppForms\TestProj\Unit1.dfm=C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Unit1.dfm</Transaction>
     <Transaction>1899.12.30 00:00:00.000.736,=C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Unit1.cpp</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.949,C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Unit1.cpp=D:\CppForms\TestProj\Unit1.cpp</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.949,C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Unit1.dfm=D:\CppForms\TestProj\Unit1.dfm</Transaction>
-    <Transaction>2021.09.17 13:53:11.426,=D:\CppForms\TestProj\TabsViewUnit.cpp</Transaction>
-    <Transaction>2021.09.17 13:54:41.686,=D:\CppForms\TestProj\PageInfoUnit.cpp</Transaction>
-    <Transaction>2021.09.17 18:25:12.534,=D:\CppForms\TestProj\MainView.cpp</Transaction>
-    <Transaction>2021.09.17 18:29:02.212,D:\CppForms\TestProj\TabsViewUnit.cpp=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.402,D:\CppForms\TestProj\Project1PCH1.h=C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Project1PCH1.h</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.013,D:\CppForms\TestProj\Project1.cbproj=C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Project1.cbproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.949,D:\CppForms\TestProj\Unit1.cpp=C:\Users\IvanT\Documents\Embarcadero\Studio\Projects\Unit1.cpp</Transaction>
+    <Transaction>2021.09.17 19:31:45.620,=D:\CppForms\NetBar\Unit1.cpp</Transaction>
+    <Transaction>2021.09.17 19:32:26.833,D:\CppForms\NetBar\BookmarksReader.cpp=D:\CppForms\NetBar\Unit1.cpp</Transaction>
+    <Transaction>2021.09.17 19:32:26.833,D:\CppForms\NetBar\BookmarksReader.h=D:\CppForms\NetBar\Unit1.h</Transaction>
+    <Transaction>2021.09.17 20:37:49.049,=D:\CppForms\NetBar\Unit1.cpp</Transaction>
+    <Transaction>2021.09.17 20:38:11.159,D:\CppForms\NetBar\BookmarksWriter.cpp=D:\CppForms\NetBar\Unit1.cpp</Transaction>
+    <Transaction>2021.09.17 20:38:11.159,D:\CppForms\NetBar\BookmarksWriter.h=D:\CppForms\NetBar\Unit1.h</Transaction>
   </Transactions>
 </BorlandProject>
