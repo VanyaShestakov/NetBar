@@ -1,3 +1,5 @@
-2021/09/19-12:59:20.718 2c18 Reusing MANIFEST D:\CppForms\NetBar\Win32\Debug\Project1.exe.WebView2\EBWebView\Default\Local Storage\leveldb/MANIFEST-000001
-2021/09/19-12:59:20.719 2c18 Recovering log #288
-2021/09/19-12:59:20.720 2c18 Reusing old log D:\CppForms\NetBar\Win32\Debug\Project1.exe.WebView2\EBWebView\Default\Local Storage\leveldb/000288.log 
+2021/09/19-13:49:39.124 28c8 Reusing MANIFEST D:\CppForms\NetBar\Win32\Debug\Project1.exe.WebView2\EBWebView\Default\Local Storage\leveldb/MANIFEST-000001
+2021/09/19-13:49:39.126 28c8 Recovering log #297
+2021/09/19-13:49:39.127 28c8 Level-0 table #300: started
+2021/09/19-13:49:39.144 28c8 Level-0 table #300: 48054 bytes OK
+2021/09/19-13:49:39.151 28c8 Delete type=0 #297

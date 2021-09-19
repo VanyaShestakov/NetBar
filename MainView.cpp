@@ -121,7 +121,8 @@ void __fastcall TWebView::homeBtnMouseUp(TObject *Sender, TMouseButton Button, T
 void __fastcall TWebView::addressBarClick(TObject *Sender)
 {
 	addressBar->Text = pageURL;
-	if (!isSelectedBar) {
+	if (!isSelectedBar)
+	{
 		addressBar->SelectAll();
 	}
 	isSelectedBar = true;
@@ -301,7 +302,7 @@ void __fastcall TWebView::addBookmarkBtnClick(TObject *Sender)
 	pair.second = convertToStdString(pageURL);
 	bookmarks.push_back(pair);
 	writer->writeBookmarks(bookmarks, "test.txt");
-    ShowMessage("Закладка успешно добавлена");
+	ShowMessage("Закладка успешно добавлена");
 }
 
 std::string TWebView::convertToStdString(String str)

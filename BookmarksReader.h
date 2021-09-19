@@ -6,6 +6,7 @@
 #include <vector>
 #include <utility>
 #include <fstream>
+#include <regex>
 
 class BookmarksReader
 {

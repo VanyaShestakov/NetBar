@@ -3,6 +3,8 @@
 #include <vcl.h>
 #include <vector>
 #include <fstream>
+//#include <msclr\marshal_cppstd.h>
+#include <string>
 #pragma hdrstop
 
 #include "MainView.h"
@@ -18,6 +20,7 @@ String title = "";
 String pageURL = "";
 bool isSelectedBar = false;
 int tabId = 0;
+std::vector<std::pair<std::string, std::string>> bookmarks;
 
 //---------------------------------------------------------------------------
 __fastcall TWebView::TWebView(TComponent* Owner)
@@ -30,11 +33,10 @@ void __fastcall TWebView::FormCreate(TObject *Sender)
 {
 	createNewTab();
 	BookmarksReader *reader = new BookmarksReader();
-	std::vector<std::pair<std::string, std::string>> bookmarks = reader->readBookmarks("test.txt");
-
-	BookmarksWriter *writer = new BookmarksWriter();
-	writer->writeBookmarks(bookmarks, "new.txt");
-
+	bookmarks = reader->readBookmarks("test.txt");
+	for (int i = 0; i < bookmarks.size(); i++) {
+		bookmarksBox->Items->Add(bookmarks[i].first.c_str());
+	}
 }
 
 
@@ -244,6 +246,7 @@ void TWebView::createNewTab()
 void __fastcall TWebView::DocumentComplete(TObject *ASender, _di_IDispatch const pDisp, const OleVariant &URL)
 {
 	pageURL = URL;
+    PageControl->ActivePage->Caption = "         " + title + "         ";
 }
 
 void __fastcall TWebView::NewWindow3(TObject *ASender, _di_IDispatch &ppDisp, WordBool &Cancel,
@@ -258,7 +261,6 @@ void __fastcall TWebView::TitleChange(TObject *ASender, const WideString Text)
 {
 	title = Text;
 	addressBar->Text = title;
-	PageControl->ActivePage->Caption = "         " + title + "         ";
 }
 
 TWebBrowser* TWebView::getCurrentBrowser() {
@@ -282,6 +284,31 @@ void __fastcall TWebView::PageControlMouseUp(TObject *Sender, TMouseButton Butto
 	}
 }
 
+
+//---------------------------------------------------------------------------
+
+void __fastcall TWebView::showBookmarksBtnClick(TObject *Sender)
+{
+    bookmarksBox->DroppedDown = true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TWebView::addBookmarkBtnClick(TObject *Sender)
+{
+	BookmarksWriter *writer = new BookmarksWriter();
+	std::pair<std::string, std::string> pair;
+	pair.first = convertToStdString(title);
+	pair.second = convertToStdString(pageURL);
+	bookmarks.push_back(pair);
+	writer->writeBookmarks(bookmarks, "test.txt");
+    ShowMessage("Закладка успешно добавлена");
+}
+
+std::string TWebView::convertToStdString(String str)
+{
+	AnsiString ansiStr = str;
+	return ansiStr.c_str();
+}
 
 //---------------------------------------------------------------------------
 

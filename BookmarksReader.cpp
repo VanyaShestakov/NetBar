@@ -8,6 +8,7 @@
 
 std::vector<std::pair<std::string, std::string>> BookmarksReader::readBookmarks(std::string path)
 {
+	const std::regex r(R"(^.+\S=.+\S$)");
 	std::vector<std::pair<std::string, std::string>> bookmarks;
     std::ifstream fileReader;
     std::string line;
@@ -17,7 +18,12 @@ std::vector<std::pair<std::string, std::string>> BookmarksReader::readBookmarks(
         while (!fileReader.eof())
         {
             std::pair<std::string, std::string> pair;
-            fileReader >> line;
+			std::getline(fileReader, line);
+            if (!std::regex_match(line, r))
+            {
+                bookmarks.clear();
+                return bookmarks;
+            }
             int index = line.find("=");
             pair.first = line.substr(0, index);
             pair.second = line.substr(index + 1);
